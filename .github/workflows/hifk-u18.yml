@@ -29,7 +29,13 @@ jobs:
         with:
           node-version: '22'
       - name: Hae tiedot tulospalvelusta
-        run: node hifk-u18/updater.mjs hifk-u18/data.json
+        run: |
+          set -o pipefail
+          if ! node hifk-u18/updater.mjs hifk-u18/data.json 2>&1 | tee updater.log; then
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H 'accept: application/json' 'https://tulospalvelu.leijonat.fi/helpers/getlevels?season=2027' || true)
+            echo "::error title=Datan haku epäonnistui::HTTP-tila tulospalvelusta: $code. $(tail -c 600 updater.log | tr '\n' ' ')"
+            exit 1
+          fi
       - name: Tallenna muuttunut data
         run: |
           git config user.name "hifk-u18-paivitys"
