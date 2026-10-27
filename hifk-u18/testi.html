@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yhteystesti</title>
+<meta name="robots" content="noindex">
+<style>body{font-family:system-ui,sans-serif;margin:0;padding:32px 16px;font-size:20px;line-height:1.4;background:#F3F2EF;color:#111827}b{font-size:28px}</style>
+</head>
+<body>
+<p>Testataan yhteyttä tulospalveluun…</p>
+<p id="r"><b>Odota hetki</b></p>
+<script>
+fetch('https://tulospalvelu.leijonat.fi/serie/helpers/getstandings?season=2027&subSerieId=1348',{headers:{accept:'application/json'}})
+  .then(r=>r.json()).then(d=>{document.getElementById('r').innerHTML='<b>✔ Toimii</b><br>Sarjataulukossa '+d.Teams.length+' joukkuetta. Voit sulkea sivun.';})
+  .catch(e=>{document.getElementById('r').innerHTML='<b>✘ Ei toimi</b><br>'+String(e).slice(0,120);});
+fetch('https://tulospalvelu.leijonat.fi/serie/js/main.js').then(r=>r.text()).then(t=>{
+  const m=[...new Set((t.match(/get\(["'][a-zA-Z]+["']\)|params\.[a-zA-Z]+|\[["'][a-zA-Z]+["']\]/g)||[]))].slice(0,12).join(' ');
+  const p=document.createElement('p');p.style.fontSize='14px';p.style.color='#5B6270';p.textContent='Koodi: '+(m||'-');document.body.appendChild(p);}).catch(()=>{});
+</script>
+</body>
+</html>
