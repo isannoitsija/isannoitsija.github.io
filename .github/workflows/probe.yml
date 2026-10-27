@@ -1,0 +1,19 @@
+name: probe
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/probe.yml']
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U='https://tulospalvelu.leijonat.fi/helpers/getlevels?season=2027'
+          UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+          a=$(curl -s -o /dev/null -w '%{http_code}' "$U")
+          b=$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H 'accept: application/json' "$U")
+          c=$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H 'accept: application/json, text/javascript, */*; q=0.01' -H 'x-requested-with: XMLHttpRequest' -H 'referer: https://tulospalvelu.leijonat.fi/' -H 'accept-language: fi-FI,fi;q=0.9' "$U")
+          d=$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" "https://tulospalvelu.leijonat.fi/")
+          e=$(curl -s -D - -o /dev/null "$U" | grep -iE '^(server|cf-|x-|set-cookie)' | tr '\r\n' '  ' | head -c 400)
+          ip=$(curl -s https://api.ipify.org || true)
+          echo "::notice title=probe::plain=$a ua=$b xhr=$c home=$d ip=$ip hdr=$e"
