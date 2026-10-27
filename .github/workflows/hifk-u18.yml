@@ -1,0 +1,43 @@
+name: HIFK U18 -seurannan päivitys
+
+on:
+  schedule:
+    # Joka ilta n. klo 22.30 Suomen talviaikaa (20.31 UTC) sekä lauantaisin ja sunnuntaisin myös iltapäivällä
+    - cron: '31 20 * * *'
+    - cron: '41 16 * * 6,0'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'hifk-u18/updater.mjs'
+      - '.github/workflows/hifk-u18.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hifk-u18-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Hae tiedot tulospalvelusta
+        run: node hifk-u18/updater.mjs hifk-u18/data.json
+      - name: Tallenna muuttunut data
+        run: |
+          git config user.name "hifk-u18-paivitys"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hifk-u18/data.json
+          if git diff --cached --quiet; then
+            echo "Ei muutoksia."
+          else
+            git commit -m "HIFK U18: tiedot päivitetty $(TZ=Europe/Helsinki date '+%d.%m.%Y %H.%M')"
+            git push
+          fi
